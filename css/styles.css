@@ -1,0 +1,323 @@
+/* ============================================
+   SLAM! Home Run Tracker - Styles
+   ============================================ */
+
+:root {
+  --slam-orange: #E86C00;
+  --slam-dark: #1a1a2e;
+  --slam-navy: #16213e;
+  --slam-red: #c0392b;
+  --slam-green: #27ae60;
+  --slam-gray: #f0f0f0;
+  --slam-border: #ddd;
+  --radius: 8px;
+  --shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f5f5f5;
+  color: #333;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* HEADER */
+.site-header {
+  background: var(--slam-dark);
+  padding: 16px 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-logo {
+  text-decoration: none;
+}
+
+.header-logo-text {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.header-logo-text span {
+  color: var(--slam-orange);
+}
+
+.header-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+/* MAIN */
+.main-content {
+  flex: 1;
+  max-width: 900px;
+  width: 100%;
+  margin: 30px auto;
+  padding: 0 16px;
+}
+
+/* STEP SECTIONS */
+.step-section {
+  display: none;
+}
+.step-section.active {
+  display: block;
+}
+
+.step-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 32px;
+}
+
+.step-heading {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.8rem;
+  color: var(--slam-dark);
+  margin-bottom: 8px;
+}
+
+.step-subtitle {
+  color: #666;
+  margin-bottom: 24px;
+  font-size: 1rem;
+}
+
+/* BACK BUTTON */
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--slam-orange);
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-bottom: 16px;
+  padding: 0;
+}
+.back-btn:hover { text-decoration: underline; }
+
+/* GRADE / TEACHER GRID */
+.grade-grid, .teacher-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.grade-btn, .teacher-btn {
+  background: var(--slam-gray);
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  padding: 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.grade-btn:hover, .teacher-btn:hover {
+  border-color: var(--slam-orange);
+  background: #fff;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+/* STUDENT LIST */
+.student-date-row {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.student-date-row label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+#date-input {
+  padding: 8px 12px;
+  border: 1px solid var(--slam-border);
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.student-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.student-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--slam-gray);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  transition: background 0.2s;
+}
+
+.student-name {
+  font-weight: 600;
+  font-size: 1rem;
+  flex: 1;
+}
+
+.student-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.student-btn {
+  padding: 8px 16px;
+  border: 2px solid var(--slam-border);
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  transition: all 0.2s;
+  min-width: 100px;
+}
+
+.student-btn.home-run-btn {
+  border-color: var(--slam-green);
+  color: var(--slam-green);
+}
+.student-btn.home-run-btn.selected {
+  background: var(--slam-green);
+  color: #fff;
+  border-color: var(--slam-green);
+}
+
+.student-btn.no-home-btn {
+  border-color: var(--slam-red);
+  color: var(--slam-red);
+}
+.student-btn.no-home-btn.selected {
+  background: var(--slam-red);
+  color: #fff;
+  border-color: var(--slam-red);
+}
+
+.student-btn.unselected {
+  opacity: 0.5;
+}
+
+/* SUBMIT */
+.submit-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.submit-btn {
+  background: var(--slam-orange);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #d05e00;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(232,108,0,0.3);
+}
+
+.submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.submit-status {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* SUCCESS */
+.success-card {
+  text-align: center;
+}
+
+.success-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+}
+
+/* LOADING */
+.loading-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 1000;
+}
+
+.spinner-ring {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--slam-border);
+  border-top-color: var(--slam-orange);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-label {
+  font-weight: 600;
+  color: var(--slam-dark);
+}
+
+/* FOOTER */
+.site-footer {
+  background: var(--slam-dark);
+  color: rgba(255,255,255,0.6);
+  text-align: center;
+  padding: 20px;
+  font-size: 0.85rem;
+}
+
+.footer-note {
+  margin-top: 4px;
+  color: var(--slam-orange);
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .step-card { padding: 20px; }
+  .step-heading { font-size: 1.4rem; }
+  .student-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .student-buttons { width: 100%; }
+  .student-btn { flex: 1; }
+  .grade-grid, .teacher-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
