@@ -5,12 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SLAM! Home Run Tracker</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
 
-  <!-- HEADER -->
   <header class="site-header" id="site-header">
     <div class="header-inner">
       <a href="index.html" class="header-logo">
@@ -20,7 +18,6 @@
     </div>
   </header>
 
-  <!-- MAIN CONTENT -->
   <main class="main-content">
 
     <!-- STEP 1: Choose Grade -->
@@ -28,9 +25,7 @@
       <div class="step-card">
         <h2 class="step-heading">1️⃣ Select Your Grade</h2>
         <p class="step-subtitle">Choose the grade you teach</p>
-        <div class="grade-grid" id="grade-grid">
-          <!-- Populated by JS -->
-        </div>
+        <div class="grade-grid" id="grade-grid"></div>
       </div>
     </section>
 
@@ -40,9 +35,7 @@
         <button class="back-btn" onclick="HR.showStep('grade')">← Back to Grades</button>
         <h2 class="step-heading">2️⃣ Select Your Name</h2>
         <p class="step-subtitle" id="teacher-subtitle">Teachers</p>
-        <div class="teacher-grid" id="teacher-grid">
-          <!-- Populated by JS -->
-        </div>
+        <div class="teacher-grid" id="teacher-grid"></div>
       </div>
     </section>
 
@@ -56,9 +49,7 @@
           <label for="date-input">Date: </label>
           <input type="date" id="date-input" />
         </div>
-        <div class="student-list" id="student-list">
-          <!-- Populated by JS -->
-        </div>
+        <div class="student-list" id="student-list"></div>
         <div class="submit-row">
           <button class="submit-btn" id="submit-btn" onclick="HR.submitAll()" disabled>
             Submit & Email Coaches
@@ -86,7 +77,6 @@
 
   </main>
 
-  <!-- FOOTER -->
   <footer class="site-footer">
     <p>SLAM! Nevada Home Run Tracker &copy; 2026</p>
     <p class="footer-note">Athletic Director: Coach Kenny</p>
