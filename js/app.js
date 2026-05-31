@@ -1,331 +1,374 @@
 // ============================================
-// Home Run Tracker - Frontend JavaScript
-// Teams-based: teachers see their players (flat list),
-// system groups by team for coach emails.
+// Home Run Tracker - Fully Static Demo
+// All data baked in. Swap GAS_URL for live backend.
 // ============================================
 
-const HR = {
-  // ===== CONFIG =====
-  GAS_URL: 'YOUR_GAS_WEB_APP_URL_HERE', // ← Replace after deploying Apps Script
+var DEMO_DATA = {
+  grades: {
+    'Kinder': {
+      teachers: {
+        'Ms. Harris': [
+          {name:'Alex Martinez', team:'Baseball'},
+          {name:'Bella Chen', team:'Soccer'},
+          {name:'Carlos Rivera', team:'T-Ball'},
+          {name:'Diana Park', team:'Baseball'},
+          {name:'Ethan Brown', team:'Soccer'},
+          {name:'Fiona Lee', team:'T-Ball'}
+        ],
+        'Mr. Thompson': [
+          {name:'Gabriel Kim', team:'Baseball'},
+          {name:'Hannah Wilson', team:'Soccer'},
+          {name:'Isaac Torres', team:'T-Ball'},
+          {name:'Jasmine Wright', team:'Baseball'},
+          {name:'Kevin Patel', team:'Soccer'},
+          {name:'Luna Nguyen', team:'T-Ball'}
+        ]
+      }
+    },
+    '1st Grade': {
+      teachers: {
+        'Ms. Williams': [
+          {name:'Maya Johnson', team:'Soccer'},
+          {name:'Noah Garcia', team:'Baseball'},
+          {name:'Olivia Smith', team:'Basketball'},
+          {name:'Pablo Ruiz', team:'Soccer'},
+          {name:'Quinn Davis', team:'Baseball'},
+          {name:'Rosa Martinez', team:'Basketball'}
+        ],
+        'Mr. Lee': [
+          {name:'Sam Torres', team:'T-Ball'},
+          {name:'Tina Chang', team:'Baseball'},
+          {name:'Umar Hassan', team:'Soccer'},
+          {name:'Vera Popov', team:'T-Ball'},
+          {name:'Will Jones', team:'Baseball'},
+          {name:'Xena Lopez', team:'Soccer'}
+        ]
+      }
+    },
+    '2nd Grade': {
+      teachers: {
+        'Mrs. Davis': [
+          {name:'Yara Ahmed', team:'Basketball'},
+          {name:'Zane Cooper', team:'Baseball'},
+          {name:'Ava Thompson', team:'Soccer'},
+          {name:'Blake Foster', team:'T-Ball'},
+          {name:'Cora Mitchell', team:'Basketball'},
+          {name:'Dylan Reed', team:'Baseball'}
+        ],
+        'Ms. Patel': [
+          {name:'Elena Volkov', team:'Soccer'},
+          {name:'Felix Nguyen', team:'T-Ball'},
+          {name:'Grace Kang', team:'Baseball'},
+          {name:'Hugo Alvarez', team:'Soccer'},
+          {name:'Iris Okafor', team:'T-Ball'},
+          {name:'Jake Wilson', team:'Baseball'}
+        ]
+      }
+    },
+    '3rd Grade': {
+      teachers: {
+        'Mr. Wilson': [
+          {name:'Kira Nakamura', team:'Baseball'},
+          {name:'Leo Petrov', team:'Soccer'},
+          {name:'Mia Santos', team:'Basketball'},
+          {name:'Nathan Kim', team:'Baseball'},
+          {name:'Opal Jenkins', team:'Soccer'},
+          {name:'Peter Chang', team:'Basketball'}
+        ],
+        'Mrs. Garcia': [
+          {name:'Quincy Adams', team:'T-Ball'},
+          {name:'Ruby Tanaka', team:'Baseball'},
+          {name:'Sean Murphy', team:'Soccer'},
+          {name:'Tara Singh', team:'T-Ball'},
+          {name:'Ulric Johansson', team:'Baseball'},
+          {name:'Violet Chen', team:'Soccer'}
+        ]
+      }
+    },
+    '4th Grade': {
+      teachers: {
+        'Ms. Martinez': [
+          {name:'Wade Morris', team:'Basketball'},
+          {name:'Xia Wu', team:'Baseball'},
+          {name:'Yosef Levy', team:'Soccer'},
+          {name:'Zara Idris', team:'T-Ball'},
+          {name:'Aaron Blake', team:'Basketball'},
+          {name:'Bianca Costa', team:'Baseball'}
+        ],
+        'Mr. Robinson': [
+          {name:'Caleb Dunn', team:'Soccer'},
+          {name:'Dalia Mahmoud', team:'T-Ball'},
+          {name:'Eli Hoffman', team:'Baseball'},
+          {name:'Farah Osei', team:'Soccer'},
+          {name:'Grant Phillips', team:'T-Ball'},
+          {name:'Hana Yoshida', team:'Baseball'}
+        ]
+      }
+    },
+    '5th Grade': {
+      teachers: {
+        'Mrs. Taylor': [
+          {name:'Ivan Kozlov', team:'Baseball'},
+          {name:'Julia Fernández', team:'Soccer'},
+          {name:'Kyle Washington', team:'Basketball'},
+          {name:'Lina Svensson', team:'Baseball'},
+          {name:'Miguel Reyes', team:'Soccer'},
+          {name:'Nadia Ahmadi', team:'Basketball'}
+        ],
+        'Mr. Anderson': [
+          {name:'Oscar Nilsson', team:'T-Ball'},
+          {name:'Priya Sharma', team:'Baseball'},
+          {name:'Ravi Gupta', team:'Soccer'},
+          {name:'Sofia Papadopoulos', team:'T-Ball'},
+          {name:'Tyler Brooks', team:'Baseball'},
+          {name:'Ursula Weber', team:'Soccer'}
+        ]
+      }
+    }
+  }
+};
 
-  // ===== STATE =====
+var HR = {
+  GAS_URL: '', // Set to GAS web app URL when ready
+
   state: {
-    step: 'grade',
     grade: null,
     teacher: null,
-    date: null,
-    players: [],       // [{ id, name, team, grade, teacher }]
-    selections: {},    // { playerId: 'homeRun' | 'noHomeRun' | null }
+    players: [],
+    selections: {}
   },
 
-  // ===== INIT =====
-  init() {
-    const dateInput = document.getElementById('date-input');
+  init: function() {
+    var dateInput = document.getElementById('date-input');
     if (dateInput) {
       dateInput.value = new Date().toISOString().split('T')[0];
-      this.state.date = dateInput.value;
-      dateInput.addEventListener('change', (e) => { this.state.date = e.target.value; });
     }
-    this.showStep('grade');
-    this.loadGrades();
+    this.showGradeStep();
+    this.renderGrades();
   },
 
-  // ===== NAVIGATION =====
-  showStep(step) {
-    this.state.step = step;
-    document.querySelectorAll('.step-section').forEach(s => s.style.display = 'none');
-    const el = document.getElementById('step-' + step);
-    if (el) el.style.display = '';
-    this.updateProgressBar(step);
+  // ---- NAVIGATION ----
+  showGradeStep: function() {
+    this.hideAll();
+    document.getElementById('step-grade').style.display = '';
   },
-
-  updateProgressBar(step) {
-    const steps = ['grade', 'teacher', 'players', 'success'];
-    const currentIdx = steps.indexOf(step);
-    document.querySelectorAll('.progress-step').forEach(function(el, idx) {
-      el.classList.remove('active', 'completed');
-      if (idx < currentIdx) el.classList.add('completed');
-      else if (idx === currentIdx) el.classList.add('active');
-    });
-    const bar = document.getElementById('progress-fill');
-    if (bar) {
-      const pct = currentIdx === 0 ? 0 : (currentIdx / (steps.length - 1)) * 100;
-      bar.style.width = pct + '%';
+  showTeacherStep: function() {
+    this.hideAll();
+    document.getElementById('step-teacher').style.display = '';
+  },
+  showPlayersStep: function() {
+    this.hideAll();
+    document.getElementById('step-players').style.display = '';
+  },
+  showSuccessStep: function() {
+    this.hideAll();
+    document.getElementById('step-success').style.display = '';
+  },
+  hideAll: function() {
+    var steps = document.querySelectorAll('.step-section');
+    for (var i = 0; i < steps.length; i++) {
+      steps[i].style.display = 'none';
     }
   },
 
-  // ===== LOAD GRADES =====
-  loadGrades() {
-    this.showLoading(true);
-    this.fetchJSON({ action: 'getGrades' })
-      .then(data => {
-        this.showLoading(false);
-        if (data.error) { alert('Error: ' + data.error); return; }
-        this.renderGrades(data.grades || []);
-      })
-      .catch(err => {
-        this.showLoading(false);
-        this.renderGrades(['Kinder', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade']);
-      });
-  },
+  backToGrade: function() { this.showGradeStep(); },
+  backToTeacher: function() { this.showTeacherStep(); },
 
-  renderGrades(grades) {
-    const grid = document.getElementById('grade-grid');
-    if (!grid) return;
+  // ---- RENDER GRADES ----
+  renderGrades: function() {
+    var grid = document.getElementById('grade-grid');
     grid.innerHTML = '';
-    grades.forEach(grade => {
-      const btn = document.createElement('button');
+    var grades = Object.keys(DEMO_DATA.grades);
+    for (var i = 0; i < grades.length; i++) {
+      var btn = document.createElement('button');
       btn.className = 'grade-btn';
-      btn.textContent = grade;
-      btn.onclick = () => this.selectGrade(grade);
+      btn.textContent = grades[i];
+      btn.onclick = (function(g) { return function() { HR.selectGrade(g); }; })(grades[i]);
       grid.appendChild(btn);
-    });
+    }
   },
 
-  // ===== SELECT GRADE → LOAD TEACHERS =====
-  selectGrade(grade) {
+  // ---- SELECT GRADE ----
+  selectGrade: function(grade) {
     this.state.grade = grade;
     this.state.teacher = null;
     this.state.players = [];
     this.state.selections = {};
 
-    this.showLoading(true);
-    this.fetchJSON({ action: 'getTeachers', grade: grade })
-      .then(data => {
-        this.showLoading(false);
-        if (data.error) { alert('Error: ' + data.error); return; }
-        document.getElementById('teacher-subtitle').textContent = 'Who are you? (' + grade + ')';
-        this.renderTeachers(data.teachers || []);
-        this.showStep('teacher');
-      })
-      .catch(err => {
-        this.showLoading(false);
-        this.renderTeachers(['Ms. Harris', 'Mr. Tauni', 'Mrs. Davis', 'Mr. Wilson']);
-        document.getElementById('teacher-subtitle').textContent = 'Who are you? (' + grade + ')';
-        this.showStep('teacher');
-      });
+    document.getElementById('teacher-subtitle').textContent = grade + ' Teachers';
+    this.renderTeachers(grade);
+    this.showTeacherStep();
   },
 
-  renderTeachers(teachers) {
-    const grid = document.getElementById('teacher-grid');
-    if (!grid) return;
+  // ---- RENDER TEACHERS ----
+  renderTeachers: function(grade) {
+    var grid = document.getElementById('teacher-grid');
     grid.innerHTML = '';
-    teachers.forEach(teacher => {
-      const btn = document.createElement('button');
+    var teachers = Object.keys(DEMO_DATA.grades[grade].teachers);
+    for (var i = 0; i < teachers.length; i++) {
+      var btn = document.createElement('button');
       btn.className = 'teacher-btn';
-      btn.textContent = teacher;
-      btn.onclick = () => this.selectTeacher(teacher);
+      btn.textContent = teachers[i];
+      btn.onclick = (function(t) { return function() { HR.selectTeacher(t); }; })(teachers[i]);
       grid.appendChild(btn);
-    });
+    }
   },
 
-  // ===== SELECT TEACHER → LOAD PLAYERS =====
-  selectTeacher(teacher) {
+  // ---- SELECT TEACHER ----
+  selectTeacher: function(teacher) {
     this.state.teacher = teacher;
     this.state.players = [];
     this.state.selections = {};
 
-    this.showLoading(true);
-    this.fetchJSON({ action: 'getPlayers', teacher: teacher, grade: this.state.grade })
-      .then(data => {
-        this.showLoading(false);
-        if (data.error) { alert('Error: ' + data.error); return; }
-        this.state.players = data.players || [];
-        this.state.selections = {};
-        this.state.players.forEach(p => { this.state.selections[p.id] = null; });
-        document.getElementById('players-subtitle').textContent =
-          teacher + ' — ' + this.state.grade + ' (' + this.state.players.length + ' players)';
-        this.renderPlayers();
-        this.showStep('players');
-        this.updateSubmitButton();
-      })
-      .catch(err => {
-        this.showLoading(false);
-        // Demo players for this teacher
-        var demoTeams = ['Baseball', 'Soccer', 'Basketball', 'T-Ball'];
-        var demoNames = ['Alex Martinez', 'Bella Chen', 'Carlos Rivera', 'Diana Park', 'Ethan Brown', 'Fiona Lee'];
-        this.state.players = demoNames.map(function(name, i) {
-          return {
-            id: 'demo_' + i,
-            name: name,
-            team: demoTeams[i % demoTeams.length],
-            grade: this.state.grade,
-            teacher: teacher
-          };
-        }.bind(this));
-        this.state.selections = {};
-        this.state.players.forEach(p => { this.state.selections[p.id] = null; });
-        document.getElementById('players-subtitle').textContent =
-          teacher + ' — ' + this.state.grade + ' (' + this.state.players.length + ' players)';
-        this.renderPlayers();
-        this.showStep('players');
-        this.updateSubmitButton();
-      });
+    var playersData = DEMO_DATA.grades[this.state.grade].teachers[teacher];
+    for (var i = 0; i < playersData.length; i++) {
+      var p = playersData[i];
+      var player = {
+        id: 'p_' + i,
+        name: p.name,
+        team: p.team,
+        grade: this.state.grade,
+        teacher: teacher
+      };
+      this.state.players.push(player);
+      this.state.selections[player.id] = null;
+    }
+
+    document.getElementById('players-subtitle').textContent =
+      teacher + ' — ' + this.state.grade + ' (' + this.state.players.length + ' players)';
+    this.renderPlayers();
+    this.showPlayersStep();
+    this.updateSubmitButton();
   },
 
-  // ===== RENDER PLAYER LIST =====
-  renderPlayers() {
-    const list = document.getElementById('player-list');
-    if (!list) return;
+  // ---- RENDER PLAYERS ----
+  renderPlayers: function() {
+    var list = document.getElementById('player-list');
     list.innerHTML = '';
-
-    this.state.players.forEach(player => {
-      const row = document.createElement('div');
+    for (var i = 0; i < this.state.players.length; i++) {
+      var player = this.state.players[i];
+      var row = document.createElement('div');
       row.className = 'player-row';
 
-      const info = document.createElement('div');
+      var info = document.createElement('div');
       info.className = 'player-info';
 
-      const name = document.createElement('div');
-      name.className = 'player-name';
-      name.textContent = player.name;
+      var nameEl = document.createElement('div');
+      nameEl.className = 'player-name';
+      nameEl.textContent = player.name;
 
-      const meta = document.createElement('div');
-      meta.className = 'player-meta';
-      meta.textContent = (player.team ? player.team : '') + (player.team && player.teacher ? ' • ' : '') + (player.teacher || '');
+      var metaEl = document.createElement('div');
+      metaEl.className = 'player-meta';
+      metaEl.textContent = player.team + ' • ' + player.teacher;
 
-      info.appendChild(name);
-      info.appendChild(meta);
+      info.appendChild(nameEl);
+      info.appendChild(metaEl);
 
-      const btns = document.createElement('div');
+      var btns = document.createElement('div');
       btns.className = 'player-buttons';
 
-      const hrBtn = document.createElement('button');
+      var hrBtn = document.createElement('button');
       hrBtn.className = 'player-btn hr-btn';
       hrBtn.textContent = '✅ Home Run';
-      hrBtn.onclick = () => this.togglePlayer(player.id, 'homeRun', hrBtn, noHrBtn);
 
-      const noHrBtn = document.createElement('button');
+      var noHrBtn = document.createElement('button');
       noHrBtn.className = 'player-btn no-hr-btn';
       noHrBtn.textContent = '❌ No Home Run';
-      noHrBtn.onclick = () => this.togglePlayer(player.id, 'noHomeRun', hrBtn, noHrBtn);
+
+      (function(pid, hBtn, nBtn) {
+        hBtn.onclick = function() { HR.togglePlayer(pid, 'homeRun', hBtn, nBtn); };
+        nBtn.onclick = function() { HR.togglePlayer(pid, 'noHomeRun', hBtn, nBtn); };
+      })(player.id, hrBtn, noHrBtn);
 
       btns.appendChild(hrBtn);
       btns.appendChild(noHrBtn);
       row.appendChild(info);
       row.appendChild(btns);
       list.appendChild(row);
-    });
+    }
   },
 
-  // ===== TOGGLE PLAYER =====
-  togglePlayer(playerId, value, hrBtn, noHrBtn) {
-    this.state.selections[playerId] = this.state.selections[playerId] === value ? null : value;
-    const selected = this.state.selections[playerId];
+  // ---- TOGGLE PLAYER ----
+  togglePlayer: function(playerId, value, hrBtn, noHrBtn) {
+    this.state.selections[playerId] = (this.state.selections[playerId] === value) ? null : value;
+    var sel = this.state.selections[playerId];
 
-    hrBtn.classList.toggle('selected', selected === 'homeRun');
-    hrBtn.classList.toggle('unselected', selected !== null && selected !== 'homeRun');
-    noHrBtn.classList.toggle('selected', selected === 'noHomeRun');
-    noHrBtn.classList.toggle('unselected', selected !== null && selected !== 'noHomeRun');
+    hrBtn.classList.toggle('selected', sel === 'homeRun');
+    hrBtn.classList.toggle('unselected', sel !== null && sel !== 'homeRun');
+    noHrBtn.classList.toggle('selected', sel === 'noHomeRun');
+    noHrBtn.classList.toggle('unselected', sel !== null && sel !== 'noHomeRun');
 
     this.updateSubmitButton();
   },
 
-  updateSubmitButton() {
-    const btn = document.getElementById('submit-btn');
-    const allSelected = this.state.players.length > 0 &&
-      this.state.players.every(p => this.state.selections[p.id] !== null);
-    btn.disabled = !allSelected;
+  updateSubmitButton: function() {
+    var btn = document.getElementById('submit-btn');
+    var allDone = this.state.players.length > 0;
+    for (var i = 0; i < this.state.players.length; i++) {
+      if (this.state.selections[this.state.players[i].id] === null) {
+        allDone = false;
+        break;
+      }
+    }
+    btn.disabled = !allDone;
   },
 
-  // ===== SUBMIT =====
-  submitAll() {
-    const date = this.state.date || new Date().toISOString().split('T')[0];
-    const submissions = this.state.players.map(p => ({
-      playerId: p.id,
-      playerName: p.name,
-      team: p.team,
-      grade: this.state.grade,
-      teacher: this.state.teacher,
-      date: date,
-      status: this.state.selections[p.id]
-    }));
-
-    const status = document.getElementById('submit-status');
-    status.textContent = 'Submitting...';
-
-    this.fetchJSON({
-      action: 'submitHomeRuns',
-      submissions: submissions,
-      grade: this.state.grade,
-      teacher: this.state.teacher,
-      date: date
-    })
-      .then(data => {
-        if (data.error) {
-          status.textContent = '❌ Error: ' + data.error;
-          status.style.color = '#e74c3c';
-          return;
-        }
-        var msg = '✅ ' + submissions.length + ' players marked!';
-        if (data.emailsSent > 0) {
-          msg += ' 📧 ' + data.emailsSent + ' coach email(s) sent!';
-        } else {
-          msg += ' ⏳ Coach email will send when all players are rated.';
-        }
-        document.getElementById('success-message').textContent = msg;
-        this.showSuccessSummary(submissions);
-        this.showStep('success');
-      })
-      .catch(err => {
-        status.textContent = '❌ Submission failed. Please try again.';
-        status.style.color = '#e74c3c';
+  // ---- SUBMIT ----
+  submitAll: function() {
+    var date = document.getElementById('date-input').value;
+    var submissions = [];
+    for (var i = 0; i < this.state.players.length; i++) {
+      var p = this.state.players[i];
+      submissions.push({
+        playerId: p.id,
+        playerName: p.name,
+        team: p.team,
+        grade: this.state.grade,
+        teacher: this.state.teacher,
+        date: date,
+        status: this.state.selections[p.id]
       });
+    }
+
+    // Show success
+    var hrCount = 0;
+    for (var j = 0; j < submissions.length; j++) {
+      if (submissions[j].status === 'homeRun') hrCount++;
+    }
+
+    document.getElementById('success-message').textContent =
+      submissions.length + ' players submitted! ' +
+      hrCount + ' ✅ Home Run, ' + (submissions.length - hrCount) + ' ❌ No Home Run.' +
+      ' 📧 Coaches will be notified.';
+
+    this.renderSuccessSummary(submissions);
+    this.showSuccessStep();
   },
 
-  showSuccessSummary(submissions) {
-    const container = document.getElementById('success-summary');
-    if (!container) return;
+  renderSuccessSummary: function(submissions) {
+    var container = document.getElementById('success-summary');
     container.innerHTML = '';
-    submissions.forEach(function(s) {
-      const row = document.createElement('div');
+    for (var i = 0; i < submissions.length; i++) {
+      var s = submissions[i];
+      var row = document.createElement('div');
       row.className = 'summary-row';
-      const icon = s.status === 'homeRun' ? '✅ Home Run' : '❌ No Home Run';
-      const color = s.status === 'homeRun' ? '#2ecc71' : '#e74c3c';
-      row.innerHTML = '<span class="summary-name">' + s.playerName + '</span>' +
-        '<span class="summary-team">' + (s.team || '') + '</span>' +
+      var icon = s.status === 'homeRun' ? '✅ Home Run' : '❌ No Home Run';
+      var color = s.status === 'homeRun' ? '#27ae60' : '#e74c3c';
+      row.innerHTML =
+        '<span class="summary-name">' + s.playerName + '</span>' +
+        '<span class="summary-team">' + s.team + '</span>' +
         '<span class="summary-status" style="color:' + color + '">' + icon + '</span>';
       container.appendChild(row);
-    });
+    }
   },
 
-  // ===== RESET =====
-  reset() {
-    this.state.step = 'grade';
+  // ---- RESET ----
+  reset: function() {
     this.state.grade = null;
     this.state.teacher = null;
     this.state.players = [];
     this.state.selections = {};
-    document.getElementById('submit-status').textContent = '';
-    document.getElementById('submit-status').style.color = '#666';
-    this.showStep('grade');
-    this.loadGrades();
-  },
-
-  // ===== HELPERS =====
-  showLoading(show) {
-    const el = document.getElementById('loading-overlay');
-    if (el) el.style.display = show ? 'flex' : 'none';
-  },
-
-  fetchJSON(params) {
-    return new Promise((resolve, reject) => {
-      const url = this.GAS_URL;
-      if (!url || url.indexOf('YOUR_GAS_WEB_APP') > -1) {
-        // Demo mode — simulate success
-        setTimeout(function() {
-          resolve({ success: true, count: params.submissions ? params.submissions.length : 0, emailsSent: 0 });
-        }, 800);
-        return;
-      }
-      const script = document.createElement('script');
-      const cb = 'hr_cb_' + Date.now();
-      script.src = url + '?action=' + encodeURIComponent(params.action || '') +
-        '&callback=' + cb + '&data=' + encodeURIComponent(JSON.stringify(params));
-      window[cb] = function(data) { delete window[cb]; resolve(data); };
-      script.onerror = function() { delete window[cb]; reject(new Error('Failed')); };
-      document.body.appendChild(script);
-    });
+    this.showGradeStep();
   }
 };
 
