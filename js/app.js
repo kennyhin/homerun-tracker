@@ -1,10 +1,39 @@
 // ============================================
 // Home Run Tracker - Frontend JavaScript
+// Works in DEMO mode (no backend) or LIVE mode (GAS backend)
 // ============================================
 
 const HR = {
   // ===== CONFIG =====
-  GAS_URL: 'YOUR_GAS_WEB_APP_URL_HERE', // ← Replace after deploying Apps Script
+  GAS_URL: '', // ← Set to your GAS Web App URL to enable live mode. Leave empty for demo.
+
+  // ===== DEMO DATA =====
+  DEMO_DATA: {
+    'Kinder': {
+      'Ms. Anderson': ['Emma Johnson', 'Liam Smith', 'Olivia Brown', 'Noah Davis', 'Ava Wilson', 'Ethan Moore'],
+      'Mr. Bradley': ['Sophia Taylor', 'Mason Clark', 'Isabella White', 'Lucas Harris', 'Mia Martin', 'Logan Garcia']
+    },
+    '1st Grade': {
+      'Ms. Carter': ['Aiden Martinez', 'Charlotte Robinson', 'Elijah Lewis', 'Amelia Walker', 'James Hall', 'Harper Allen'],
+      'Mr. Donovan': ['Benjamin Young', 'Evelyn King', 'Sebastian Wright', 'Abigail Scott', 'Jack Green', 'Emily Adams']
+    },
+    '2nd Grade': {
+      'Ms. Evans': ['Henry Baker', 'Elizabeth Gonzalez', 'Alexander Nelson', 'Sofia Carter', 'Daniel Mitchell', 'Avery Perez'],
+      'Mr. Foster': ['Matthew Roberts', 'Ella Turner', 'Samuel Phillips', 'Scarlett Campbell', 'David Parker', 'Grace Edwards']
+    },
+    '3rd Grade': {
+      'Ms. Green': ['Joseph Collins', 'Chloe Stewart', 'Carter Sanchez', 'Victoria Morris', 'Owen Rogers', 'Aria Reed'],
+      'Mr. Hayes': ['Wyatt Cook', 'Madison Morgan', 'John Bell', 'Layla Murphy', 'Luke Bailey', 'Penelope Rivera']
+    },
+    '4th Grade': {
+      'Ms. Ingram': ['Gabriel Cooper', 'Riley Richardson', 'Julian Cox', 'Zoey Ward', 'Levi Peterson', 'Nora Gray'],
+      'Mr. Jenkins': ['Isaac Ramirez', 'Lily James', 'Lincoln Watson', 'Aubrey Brooks', 'Mateo Kelly', 'Hannah Sanders']
+    },
+    '5th Grade': {
+      'Ms. Kelly': ['Jaxon Price', 'Addison Bennett', 'Christopher Wood', 'Ellie Barnes', 'Theodore Ross', 'Stella Henderson'],
+      'Mr. Lawrence': ['Ezra Coleman', 'Natalie Jenkins', 'Hudson Perry', 'Leah Powell', 'Andrew Patterson', 'Audrey Hughes']
+    }
+  },
 
   // ===== STATE =====
   state: {
@@ -12,13 +41,15 @@ const HR = {
     grade: null,
     teacher: null,
     date: null,
-    students: [],       // [{ id, name, grade, teacher }]
-    selections: {},     // { studentId: 'homeRun' | 'noHomeRun' | null }
+    students: [],
+    selections: {},
+    isLive: false
   },
 
   // ===== INIT =====
   init() {
-    // Set default date to today
+    this.state.isLive = this.GAS_URL && this.GAS_URL.indexOf('YOUR_GAS') === -1;
+
     const dateInput = document.getElementById('date-input');
     if (dateInput) {
       dateInput.value = new Date().toISOString().split('T')[0];
@@ -35,28 +66,37 @@ const HR = {
   showStep(step) {
     this.state.step = step;
     document.querySelectorAll('.step-section').forEach(s => s.style.display = 'none');
+    document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
     const el = document.getElementById('step-' + step);
-    if (el) el.style.display = '';
+    if (el) {
+      el.style.display = '';
+      el.classList.add('active');
+    }
   },
 
   // ===== LOAD GRADES =====
   loadGrades() {
-    this.showLoading(true);
-    this.fetchJSON({ action: 'getGrades' })
-      .then(data => {
-        this.showLoading(false);
-        if (data.error) {
-          alert('Error: ' + data.error);
-          return;
-        }
-        this.renderGrades(data.grades || []);
-      })
-      .catch(err => {
-        this.showLoading(false);
-        console.error(err);
-        // Demo data if GAS not connected yet
-        this.renderGrades(['Kinder', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade']);
-      });
+    if (this.state.isLive) {
+      this.showLoading(true);
+      this.fetchJSON({ action: 'getGrades' })
+        .then(data => {
+          this.showLoading(false);
+          if (data.error) { alert('Error: ' + data.error); return; }
+          this.renderGrades(data.grades || []);
+        })
+        .catch(err => {
+          this.showLoading(false);
+          console.error(err);
+          this.useDemoGrades();
+        });
+    } else {
+      this.useDemoGrades();
+    }
+  },
+
+  useDemoGrades() {
+    const grades = Object.keys(this.DEMO_DATA).sort(this.sortGrade);
+    this.renderGrades(grades);
   },
 
   renderGrades(grades) {
@@ -79,23 +119,31 @@ const HR = {
     this.state.students = [];
     this.state.selections = {};
 
-    this.showLoading(true);
-    this.fetchJSON({ action: 'getTeachers', grade: grade })
-      .then(data => {
-        this.showLoading(false);
-        if (data.error) { alert('Error: ' + data.error); return; }
-        document.getElementById('teacher-subtitle').textContent = grade + ' Teachers';
-        this.renderTeachers(data.teachers || []);
-        this.showStep('teacher');
-      })
-      .catch(err => {
-        this.showLoading(false);
-        console.error(err);
-        // Demo teachers
-        this.renderTeachers(['Ms. Smith', 'Mr. Johnson', 'Mrs. Davis', 'Mr. Wilson']);
-        document.getElementById('teacher-subtitle').textContent = grade + ' Teachers';
-        this.showStep('teacher');
-      });
+    if (this.state.isLive) {
+      this.showLoading(true);
+      this.fetchJSON({ action: 'getTeachers', grade: grade })
+        .then(data => {
+          this.showLoading(false);
+          if (data.error) { alert('Error: ' + data.error); return; }
+          document.getElementById('teacher-subtitle').textContent = grade + ' Teachers';
+          this.renderTeachers(data.teachers || []);
+          this.showStep('teacher');
+        })
+        .catch(err => {
+          this.showLoading(false);
+          console.error(err);
+          this.useDemoTeachers(grade);
+        });
+    } else {
+      this.useDemoTeachers(grade);
+    }
+  },
+
+  useDemoTeachers(grade) {
+    const teachers = Object.keys(this.DEMO_DATA[grade] || {});
+    document.getElementById('teacher-subtitle').textContent = grade + ' Teachers';
+    this.renderTeachers(teachers);
+    this.showStep('teacher');
   },
 
   renderTeachers(teachers) {
@@ -117,39 +165,46 @@ const HR = {
     this.state.students = [];
     this.state.selections = {};
 
-    this.showLoading(true);
-    this.fetchJSON({ action: 'getStudents', teacher: teacher, grade: this.state.grade })
-      .then(data => {
-        this.showLoading(false);
-        if (data.error) { alert('Error: ' + data.error); return; }
-        this.state.students = data.students || [];
-        this.state.selections = {};
-        this.state.students.forEach(s => { this.state.selections[s.id] = null; });
-        document.getElementById('student-subtitle').textContent =
-          teacher + ' — ' + this.state.grade + ' (' + this.state.students.length + ' athletes)';
-        this.renderStudents();
-        this.showStep('students');
-        this.updateSubmitButton();
-      })
-      .catch(err => {
-        this.showLoading(false);
-        console.error(err);
-        // Demo students
-        const demoNames = ['Alex Martinez', 'Bella Chen', 'Carlos Rivera', 'Diana Park', 'Ethan Brown', 'Fiona Lee', 'Gabriel Kim', 'Hannah Wilson'];
-        this.state.students = demoNames.map((name, i) => ({
-          id: 'demo_' + i,
-          name: name,
-          grade: this.state.grade,
-          teacher: teacher
-        }));
-        this.state.selections = {};
-        this.state.students.forEach(s => { this.state.selections[s.id] = null; });
-        document.getElementById('student-subtitle').textContent =
-          teacher + ' — ' + this.state.grade + ' (' + this.state.students.length + ' athletes)';
-        this.renderStudents();
-        this.showStep('students');
-        this.updateSubmitButton();
-      });
+    if (this.state.isLive) {
+      this.showLoading(true);
+      this.fetchJSON({ action: 'getStudents', teacher: teacher, grade: this.state.grade })
+        .then(data => {
+          this.showLoading(false);
+          if (data.error) { alert('Error: ' + data.error); return; }
+          this.state.students = data.students || [];
+          this.state.selections = {};
+          this.state.students.forEach(s => { this.state.selections[s.id] = null; });
+          document.getElementById('student-subtitle').textContent =
+            teacher + ' — ' + this.state.grade + ' (' + this.state.students.length + ' athletes)';
+          this.renderStudents();
+          this.showStep('students');
+          this.updateSubmitButton();
+        })
+        .catch(err => {
+          this.showLoading(false);
+          console.error(err);
+          this.useDemoStudents(teacher);
+        });
+    } else {
+      this.useDemoStudents(teacher);
+    }
+  },
+
+  useDemoStudents(teacher) {
+    const names = this.DEMO_DATA[this.state.grade][teacher] || [];
+    this.state.students = names.map((name, i) => ({
+      id: 'demo_' + i,
+      name: name,
+      grade: this.state.grade,
+      teacher: teacher
+    }));
+    this.state.selections = {};
+    this.state.students.forEach(s => { this.state.selections[s.id] = null; });
+    document.getElementById('student-subtitle').textContent =
+      teacher + ' — ' + this.state.grade + ' (' + this.state.students.length + ' athletes)';
+    this.renderStudents();
+    this.showStep('students');
+    this.updateSubmitButton();
   },
 
   // ===== RENDER STUDENT LIST =====
@@ -221,30 +276,57 @@ const HR = {
     const status = document.getElementById('submit-status');
     status.textContent = 'Submitting...';
 
-    this.fetchJSON({
-      action: 'submitHomeRuns',
-      submissions: submissions,
-      grade: this.state.grade,
-      teacher: this.state.teacher,
-      date: date
-    })
-      .then(data => {
-        if (data.error) {
-          status.textContent = 'Error: ' + data.error;
-          status.style.color = '#c0392b';
-          return;
-        }
-        document.getElementById('success-message').textContent =
-          data.emailSent
-            ? `✅ ${submissions.length} home runs recorded. Coaches have been emailed!`
-            : `✅ ${submissions.length} home runs recorded successfully!`;
-        this.showStep('success');
+    if (this.state.isLive) {
+      // Live mode: save to GAS backend + email coaches
+      this.fetchJSON({
+        action: 'submitHomeRuns',
+        submissions: submissions,
+        grade: this.state.grade,
+        teacher: this.state.teacher,
+        date: date
       })
-      .catch(err => {
-        console.error(err);
-        status.textContent = 'Submission failed. Please try again.';
-        status.style.color = '#c0392b';
-      });
+        .then(data => {
+          if (data.error) {
+            status.textContent = 'Error: ' + data.error;
+            status.style.color = '#c0392b';
+            return;
+          }
+          this.showSuccess(submissions, !!data.emailSent);
+        })
+        .catch(err => {
+          console.error(err);
+          status.textContent = 'Live submission failed. Please try again.';
+          status.style.color = '#c0392b';
+        });
+    } else {
+      // Demo mode: simulate success
+      setTimeout(() => {
+        this.showSuccess(submissions, false);
+        console.log('DEMO SUBMISSION:', JSON.stringify(submissions, null, 2));
+      }, 800);
+    }
+  },
+
+  showSuccess(submissions, emailSent) {
+    const hrCount = submissions.filter(s => s.status === 'homeRun').length;
+    const noHrCount = submissions.length - hrCount;
+    let msg = '✅ ' + submissions.length + ' home runs recorded!\n';
+    msg += '✅ ' + hrCount + ' Home Run | ❌ ' + noHrCount + ' No Home Run\n';
+    if (emailSent) msg += '\n📧 Coaches have been emailed!';
+    else msg += '\n📧 (Demo mode — email not sent)';
+
+    document.getElementById('success-message').textContent =
+      submissions.length + ' home runs recorded!' +
+      (emailSent ? ' Coaches have been emailed.' : '');
+
+    document.getElementById('success-detail').innerHTML =
+      '<hr style="margin:12px 0;border:1px solid #eee"/>' +
+      '<p>' + hrCount + ' ✅ Home Run | ' + noHrCount + ' ❌ No Home Run</p>' +
+      '<p style="font-size:0.85rem;color:#999;margin-top:8px;">' +
+      (emailSent ? '📧 Coaches notified' : '📧 Demo mode — connect Google Apps Script backend to enable email') +
+      '</p>';
+
+    this.showStep('success');
   },
 
   // ===== RESET =====
@@ -269,18 +351,20 @@ const HR = {
   fetchJSON(params) {
     return new Promise((resolve, reject) => {
       const url = this.GAS_URL;
-      if (!url || url === 'YOUR_GAS_WEB_APP_URL_HERE') {
+      if (!url || url.indexOf('YOUR_GAS') !== -1) {
         reject(new Error('GAS web app URL not configured'));
         return;
       }
-      // Use JSONP-style approach for cross-origin GAS
       const script = document.createElement('script');
       const callbackName = 'hr_cb_' + Date.now();
       const paramStr = Object.entries(params)
-        .map(([k, v]) => k + '=' + encodeURIComponent(JSON.stringify(v || '')))
+        .map(([k, v]) => {
+          const val = typeof v === 'object' ? JSON.stringify(v) : (v || '');
+          return k + '=' + encodeURIComponent(val);
+        })
         .join('&');
       script.src = url + '?action=' + encodeURIComponent(params.action) +
-        '&callback=' + callbackName + '&' + paramStr.substring(paramStr.indexOf('&') + 1);
+        '&callback=' + callbackName + '&' + paramStr;
       window[callbackName] = (data) => {
         delete window[callbackName];
         resolve(data);
@@ -291,6 +375,19 @@ const HR = {
       };
       document.body.appendChild(script);
     });
+  },
+
+  sortGrade(a, b) {
+    var order = { 'kinder': 0, 'kindergarten': 0, 'pre-k': -1, 'pk': -1 };
+    var aKey = String(a).toLowerCase();
+    var bKey = String(b).toLowerCase();
+    if (order[aKey] !== undefined && order[bKey] !== undefined) return order[aKey] - order[bKey];
+    if (order[aKey] !== undefined) return -1;
+    if (order[bKey] !== undefined) return 1;
+    var aNum = parseInt(aKey);
+    var bNum = parseInt(bKey);
+    if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+    return aKey.localeCompare(bKey);
   }
 };
 
