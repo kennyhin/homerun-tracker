@@ -150,19 +150,19 @@ var HR = {
   // ---- NAVIGATION ----
   showGradeStep: function() {
     this.hideAll();
-    document.getElementById('step-grade').style.display = '';
+    document.getElementById('step-grade').style.display = 'block';
   },
   showTeacherStep: function() {
     this.hideAll();
-    document.getElementById('step-teacher').style.display = '';
+    document.getElementById('step-teacher').style.display = 'block';
   },
   showPlayersStep: function() {
     this.hideAll();
-    document.getElementById('step-players').style.display = '';
+    document.getElementById('step-players').style.display = 'block';
   },
   showSuccessStep: function() {
     this.hideAll();
-    document.getElementById('step-success').style.display = '';
+    document.getElementById('step-success').style.display = 'block';
   },
   hideAll: function() {
     var steps = document.querySelectorAll('.step-section');
