@@ -5,79 +5,121 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SLAM! Home Run Tracker</title>
   <meta name="robots" content="noindex, nofollow" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
 
-  <header class="site-header" id="site-header">
+  <!-- HEADER -->
+  <header class="site-header">
     <div class="header-inner">
       <a href="index.html" class="header-logo">
         <div class="header-logo-text">SLAM <span>Home Run</span></div>
       </a>
-      <h1 class="header-title">Home Run Tracker</h1>
+      <div class="header-title">Home Run Tracker</div>
     </div>
   </header>
 
-  <main class="main-content">
+  <!-- MAIN CONTENT -->
+  <main class="page-content">
 
-    <!-- STEP 1: Choose Grade -->
-    <section id="step-grade" class="step-section active">
-      <div class="step-card">
-        <h2 class="step-heading">1️⃣ Select Your Grade</h2>
+    <div class="page-header">
+      <h1 class="page-title">🏃 Home Run <span>Tracker</span></h1>
+      <p class="page-subtitle">SLAM! Nevada — Academic Progress Reporting</p>
+    </div>
+
+    <!-- PROGRESS BAR -->
+    <div class="form-progress" id="form-progress">
+      <div class="progress-line"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-step active" data-step="1">
+        <div class="progress-dot">1</div>
+        <div class="progress-label">Grade</div>
+      </div>
+      <div class="progress-step" data-step="2">
+        <div class="progress-dot">2</div>
+        <div class="progress-label">Teacher</div>
+      </div>
+      <div class="progress-step" data-step="3">
+        <div class="progress-dot">3</div>
+        <div class="progress-label">Mark</div>
+      </div>
+      <div class="progress-step" data-step="4">
+        <div class="progress-dot">4</div>
+        <div class="progress-label">Done</div>
+      </div>
+    </div>
+
+    <!-- FORM CARD -->
+    <div class="form-card">
+
+      <!-- STEP 1: Choose Grade -->
+      <div class="form-step active" id="step-grade">
+        <h2 class="step-title">1️⃣ Select Your Grade</h2>
         <p class="step-subtitle">Choose the grade you teach</p>
-        <div class="grade-grid" id="grade-grid"></div>
+        <div class="field-group">
+          <label class="field-label">Grade</label>
+          <div class="bubble-group" id="grade-grid"></div>
+        </div>
       </div>
-    </section>
 
-    <!-- STEP 2: Choose Teacher -->
-    <section id="step-teacher" class="step-section" style="display:none">
-      <div class="step-card">
-        <button class="back-btn" onclick="HR.showStep('grade')">← Back to Grades</button>
-        <h2 class="step-heading">2️⃣ Select Your Name</h2>
+      <!-- STEP 2: Choose Teacher -->
+      <div class="form-step" id="step-teacher">
+        <h2 class="step-title">2️⃣ Select Your Name</h2>
         <p class="step-subtitle" id="teacher-subtitle">Teachers</p>
-        <div class="teacher-grid" id="teacher-grid"></div>
+        <div class="field-group">
+          <label class="field-label">Teacher</label>
+          <div class="bubble-group" id="teacher-grid"></div>
+        </div>
+        <div class="form-nav">
+          <button class="nav-btn secondary" onclick="HR.prevStep(1)">← Back</button>
+        </div>
       </div>
-    </section>
 
-    <!-- STEP 3: Mark Home Runs -->
-    <section id="step-students" class="step-section" style="display:none">
-      <div class="step-card">
-        <button class="back-btn" onclick="HR.showStep('teacher')">← Back to Teachers</button>
-        <h2 class="step-heading">3️⃣ Mark Home Runs</h2>
+      <!-- STEP 3: Mark Home Runs -->
+      <div class="form-step" id="step-students">
+        <h2 class="step-title">3️⃣ Mark Home Runs</h2>
         <p class="step-subtitle" id="student-subtitle"></p>
-        <div class="student-date-row">
-          <label for="date-input">Date: </label>
-          <input type="date" id="date-input" />
+
+        <div class="field-group">
+          <div class="student-list" id="student-list"></div>
         </div>
-        <div class="student-list" id="student-list"></div>
-        <div class="submit-row">
-          <button class="submit-btn" id="submit-btn" onclick="HR.submitAll()" disabled>
-            Submit & Email Coaches
+
+        <p class="submit-note">
+          💡 Toggle each athlete then submit. Coaches will be notified automatically.
+        </p>
+
+        <div class="form-nav">
+          <button class="nav-btn secondary" onclick="HR.prevStep(2)">← Back</button>
+          <button class="nav-btn primary" id="submit-btn" onclick="HR.submitAll()" disabled>
+            Submit &amp; Email Coaches
           </button>
-          <span class="submit-status" id="submit-status"></span>
         </div>
       </div>
-    </section>
 
-    <!-- SUCCESS SCREEN -->
-    <section id="step-success" class="step-section" style="display:none">
-      <div class="step-card success-card">
-        <div class="success-icon">✅</div>
-        <h2 class="step-heading">Home Runs Submitted!</h2>
-        <p class="step-subtitle" id="success-message">The coaches have been notified.</p>
-        <div id="success-detail"></div>
-        <button class="submit-btn" style="margin-top:16px" onclick="HR.reset()">Submit Another</button>
+      <!-- STEP 4: Confirmation -->
+      <div class="form-step" id="step-success">
+        <div class="confirmation-screen">
+          <div class="confirm-icon">✓</div>
+          <h2 class="confirm-title">Home Runs Submitted!</h2>
+          <p class="confirm-msg" id="success-message">The coaches have been notified.</p>
+          <div class="confirm-summary" id="success-summary"></div>
+          <div class="confirm-actions">
+            <button class="nav-btn primary" onclick="HR.reset()">🔄 Submit Another</button>
+          </div>
+        </div>
       </div>
-    </section>
 
-    <!-- LOADING STATE -->
-    <div id="loading-overlay" class="loading-overlay" style="display:none">
-      <div class="spinner-ring"></div>
+    </div><!-- /form-card -->
+
+    <!-- LOADING OVERLAY -->
+    <div class="loading-overlay" id="loading-overlay">
+      <div class="spinner"></div>
       <span class="loading-label">Loading...</span>
     </div>
 
   </main>
 
+  <!-- FOOTER -->
   <footer class="site-footer">
     <p>SLAM! Nevada Home Run Tracker &copy; 2026</p>
     <p class="footer-note">Athletic Director: Coach Kenny</p>
